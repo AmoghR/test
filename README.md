@@ -21,11 +21,11 @@
 | Progress | Feature | Info |
 | --- | --- | --- |
 | ![100%](https://progress-bar.xyz/100) | **[M1](#m1--scrollable-postcard-explorer)** | Done |
-| ![100%](https://progress-bar.xyz/100) | **[M2](#m2--postcard-clustering)** | Visualization missing, all data available |
-| ![0%](https://progress-bar.xyz/0)     | **[M3](#m3--postcard-path-visualization)** | Not started |
+| ![100%](https://progress-bar.xyz/100) | **[M2](#m2--postcard-clustering)** | Done |
+| ![100%](https://progress-bar.xyz/100)     | **[M3](#m3--postcard-path-visualization)** | Done |
 | ![100%](https://progress-bar.xyz/100) | **[E1](#e1--semantic-search)** | Done |
-| ![90%](https://progress-bar.xyz/90)   | **[E2](#e2--outlier-detection)** | Add additional boxplot based outliers |
-| ![0%](https://progress-bar.xyz/0)     | **[E3](#e3--semantic-zooming)** | Not started, depends on M3 |
+| ![100%](https://progress-bar.xyz/100)   | **[E2](#e2--outlier-detection)** | Done |
+| ![50%](https://progress-bar.xyz/50)     | **[E3](#e3--semantic-zooming)** | Cluster Map zooming/clustering/loading images missing |
 
 ## Setup
 ### Backend

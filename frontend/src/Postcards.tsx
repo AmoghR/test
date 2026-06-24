@@ -19,10 +19,13 @@ type Postcard = {
   numerical_index: number;
   label: number;
   similarity_score: number;
+  outlier: boolean;
 };
 
 type PostcardStorage = {
     postcards: Postcard[];
+    origin_countries: string[];
+    receiving_countries: string[];
     min_distance: number;
     max_distance: number;
     min_time: number;
@@ -32,11 +35,15 @@ type PostcardStorage = {
     searchFilter: string;
     distanceFilter: number;
     timeFilter: number;
-    selectedCountry: string | null;
+    selectedReceivingCountry: string | null;
+    selectedOriginCountry: string | null;
+    showOutliers: boolean;
     setSearchFilter: (v: string) => void;
     setDistanceFilter: (v: number) => void;
     setTimeFilter: (v: number) => void;
-    setSelectedCountry: (v: string | null) => void;
+    setSelectedReceivingCountry: (v: string | null) => void;
+    setSelectedOriginCountry: (v: string | null) => void;
+    setShowOutliers: (v: boolean) => void;
 }
 
 const PostcardContext = createContext<PostcardStorage | undefined>(undefined);
@@ -48,6 +55,8 @@ export function PostcardProvider({
 }) {
   const [postcardStorage, setPostcardStorage] = useState<PostcardStorage>({
         postcards: [],
+        origin_countries: [],
+        receiving_countries: [],
         min_distance: 0,
         max_distance: 0,
         min_time: 0,
@@ -56,16 +65,22 @@ export function PostcardProvider({
         searchFilter: "",
         distanceFilter: 0,
         timeFilter: 0,
-        selectedCountry: null,
+        selectedReceivingCountry: null,
+        selectedOriginCountry: null,
+        showOutliers: false,
         setSearchFilter: () => {},
         setDistanceFilter: () => {},
         setTimeFilter: () => {},
-        setSelectedCountry: () => {},
+        setSelectedReceivingCountry: () => {},
+        setSelectedOriginCountry: () => {},
+        setShowOutliers: () => {},
   });
     const [distanceFilter, setDistanceFilter] = useState(0);
     const [timeFilter, setTimeFilter] = useState(0);
     const [searchFilter, setSearchFilter] = useState("");
-    const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+    const [selectedReceivingCountry, setSelectedReceivingCountry] = useState<string | null>(null);
+    const [selectedOriginCountry, setSelectedOriginCountry] = useState<string | null>(null);
+    const [showOutliers, setShowOutliers] = useState(false);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -83,8 +98,16 @@ export function PostcardProvider({
           params.append("search_query", String(searchFilter));
         }
 
-        if (selectedCountry) {
-          params.append("country", selectedCountry);
+        if (selectedOriginCountry && selectedOriginCountry != "All") {
+          params.append("origin_country", selectedOriginCountry);
+        }
+
+        if (selectedReceivingCountry&& selectedReceivingCountry != "All") {
+          params.append("receiving_country", selectedReceivingCountry);
+        }
+
+        if (showOutliers) {
+          params.append("outlier", String(showOutliers));
         }
 
         fetch(`http://localhost:8000/postcards?${params.toString()}`)
@@ -95,7 +118,7 @@ export function PostcardProvider({
     }, 150);
 
     return () => clearTimeout(timeout);
-  }, [distanceFilter, timeFilter, searchFilter, selectedCountry]);
+  }, [distanceFilter, timeFilter, searchFilter, selectedOriginCountry, selectedReceivingCountry, showOutliers]);
 
   return (
     <PostcardContext.Provider value={{
@@ -103,11 +126,15 @@ export function PostcardProvider({
   searchFilter,
   distanceFilter,
   timeFilter,
-  selectedCountry,
+  selectedReceivingCountry,
+  selectedOriginCountry,
+  showOutliers,
   setSearchFilter,
   setDistanceFilter,
   setTimeFilter,
-  setSelectedCountry,
+  setSelectedReceivingCountry,
+  setSelectedOriginCountry,
+  setShowOutliers,
 }}>
       {children}
     </PostcardContext.Provider>

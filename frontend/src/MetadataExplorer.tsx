@@ -75,10 +75,15 @@ export default function MetadataExplorer() {
                     {p.label !== undefined && (
                       p.label == -1 ?
                       <span className="text-xs px-2 py-1 rounded-full bg-red-50 text-red-700">
-                        Outlier
+                        Cluster Outlier
                       </span>:
                       <span className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
                         Cluster {p.label}
+                      </span>
+                    )}
+                    {p.outlier && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-red-50 text-red-700">
+                        Time Outlier
                       </span>
                     )}
                     {p.similarity_score !== undefined && (

@@ -8,6 +8,19 @@ from backend import image_helper
 from backend.cluster_helper import SearchCluster_Helper
 from backend import Directory_Helper
 
+def get_outlier_values(values):
+    Q1 = values.quantile(0.25)
+    Q3 = values.quantile(0.75)
+    IQR = Q3 - Q1
+
+    lower_bound = Q1 - 1.5 * IQR
+    upper_bound = Q3 + 1.5 * IQR
+
+    outliers = ((values < lower_bound) |
+            (values > upper_bound))
+    print(f"Number of outliers from Quantiles: {outliers.sum()}/{len(values)}")
+    return outliers
+
 postcard_df = pd.read_json(Directory_Helper.POSTCARDS_PATH)
 postcard_df = postcard_df.sort_values("name").reset_index(drop=True)
 postcard_df["numerical_index"] = postcard_df.index
@@ -27,6 +40,9 @@ postcard_df = postcard_df.merge(
     how="left"
 )
 
+# Add Outliers
+postcard_df['outlier'] = get_outlier_values(postcard_df['time'])
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -44,13 +60,19 @@ def get_filtered_ids(
     min_time: int = Query(None),
     max_time: int = Query(None),
     search_query: str = Query(None),
-    country: str = Query(None)
+    receiving_country: str = Query(None),
+    origin_country: str = Query(None),
+    outlier: bool = Query(None)
 ):
     df = postcard_df.copy()
 
-    if country is not None:
-        df = df[(df["origin_country"] == country) | (df["receiving_country"] == country)]
+    if receiving_country is not None:
+        df = df[(df["receiving_country"] == receiving_country)]
 
+    if origin_country is not None:
+        df = df[(df["origin_country"] == origin_country)]
+
+    search_results = None
     if search_query is not None:
         search_results = search_cluster_helper.search(search_query)
         result_ids = [r["id"] for r in search_results]
@@ -68,7 +90,10 @@ def get_filtered_ids(
     if max_time is not None:
         df = df[df["time"] <= max_time]
 
-    return df["numerical_index"].tolist()
+    if outlier is not None and outlier:
+        df = df[df["outlier"] | (df["label"] == -1)]
+
+    return df["numerical_index"].tolist(), search_results
 
 @app.get("/")
 def root():
@@ -88,24 +113,26 @@ def get_postcards(
     min_time: int = Query(None),
     max_time: int = Query(None),
     search_query: str = Query(None),
-    country: str = Query(None)
+    outlier: bool = Query(None),
+    receiving_country: str = Query(None),
+    origin_country: str = Query(None),
 ):
-    filtered_ids = get_filtered_ids(
+    filtered_ids, search_results = get_filtered_ids(
         min_distance,
         max_distance,
         min_time,
         max_time,
         search_query,
-        country
+        receiving_country,
+        origin_country,
+        outlier
     )
 
     df = postcard_df[
         postcard_df["numerical_index"].isin(filtered_ids)
     ].copy()
 
-    if search_query:
-        search_results = search_cluster_helper.search(search_query)
-
+    if search_query and search_results is not None:
         score_map = {
             r["id"]: r["score"]
             for r in search_results
@@ -120,8 +147,15 @@ def get_postcards(
             ascending=False
         )
 
+    receiving_countries = df["receiving_country"].unique().tolist()
+    receiving_countries.sort()
+    origin_country = df["origin_country"].unique().tolist()
+    origin_country.sort()
+
     return {
         "postcards": df.to_dict(orient="records"),
+        "origin_countries": origin_country,
+        "receiving_countries": receiving_countries,
         "min_distance": int(postcard_df["distance"].min()),
         "max_distance": int(postcard_df["distance"].max()),
         "min_time": int(postcard_df["time"].min()),
@@ -136,15 +170,19 @@ def get_clusters(
     min_time: int = Query(None),
     max_time: int = Query(None),
     search_query: str = Query(None),
-    country: str = Query(None)
+    outlier: bool = Query(None),
+    receiving_country: str = Query(None),
+    origin_country: str = Query(None),
 ):
-    filtered_ids = get_filtered_ids(
+    filtered_ids, search_results = get_filtered_ids(
         min_distance,
         max_distance,
         min_time,
         max_time,
         search_query,
-        country
+        receiving_country,
+        origin_country,
+        outlier,
     )
     
     cluster_data = (search_cluster_helper.getClusterData())

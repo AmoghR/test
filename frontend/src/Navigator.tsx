@@ -59,6 +59,45 @@ export default function Navigator() {
                                     <span>{postcardStorage.max_time} days</span>
                                 </div>
                             </div>
+                            <div className="flex">
+                                <label className="flex items-center gap-2 cursor-pointer"
+                                title="Shows postcards with outlier label or statistical outlier based on time">
+                                    <input 
+                                        type="checkbox" 
+                                        className="w-4 h-4"
+                                        checked={postcardStorage.showOutliers}
+                                        onChange={(e) => postcardStorage.setShowOutliers(e.target.checked)}/>
+                                    <span className="text-xs text-white/70">Show Only Outliers</span>
+                                </label>
+                            </div>
+                            <div className="flex flex-col">
+                                <label className="text-xs text-white/70">
+                                    Origin Country
+                                </label>
+                                <select className="w-40 accent-white text-white"
+                                onChange={(e) => postcardStorage.setSelectedOriginCountry(e.target.value)}>
+                                    <option style={{ backgroundColor: "#fff", color: "#000" }}>All</option>
+                                    {postcardStorage.origin_countries.map((country) => (
+                                        <option style={{ backgroundColor: "#fff", color: "#000" }} key={country} value={country}>
+                                            {country}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex flex-col">
+                                <label className="text-xs text-white/70">
+                                    Receiving Country
+                                </label>
+                                <select className="w-40 accent-white text-white" 
+                                onChange={(e) => postcardStorage.setSelectedReceivingCountry(e.target.value)}>
+                                    <option style={{ backgroundColor: "#fff", color: "#000" }}>All</option>
+                                    {postcardStorage.receiving_countries.map((country) => (
+                                        <option style={{ backgroundColor: "#fff", color: "#000" }} key={country} value={country}>
+                                            {country}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
                         
                         <div className="flex space-x-4">

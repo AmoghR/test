@@ -23,7 +23,9 @@ export default function Clustering() {
   const distanceFilter = postcardStorage.distanceFilter;
   const timeFilter = postcardStorage.timeFilter;
   const searchFilter = postcardStorage.searchFilter;
-  const selectedCountry = postcardStorage.selectedCountry;
+  const selectedOriginCountry = postcardStorage.selectedOriginCountry;
+  const selectedReceivingCountry = postcardStorage.selectedReceivingCountry;
+  const showOutliers = postcardStorage.showOutliers;
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -41,8 +43,16 @@ export default function Clustering() {
         params.append("search_query", String(searchFilter));
       }
 
-      if (selectedCountry) {
-        params.append("country", selectedCountry);
+      if (showOutliers) {
+        params.append("outlier", String(showOutliers));
+      }
+
+      if (selectedOriginCountry && selectedOriginCountry != "All") {
+        params.append("origin_country", selectedOriginCountry);
+      }
+
+      if (selectedReceivingCountry&& selectedReceivingCountry != "All") {
+        params.append("receiving_country", selectedReceivingCountry);
       }
 
       fetch(`http://localhost:8000/clusters?${params.toString()}`)
@@ -51,7 +61,7 @@ export default function Clustering() {
       .catch((err) => console.error("Failed to fetch clusters:", err));
     }, 150);
     return () => clearTimeout(timeout);
-  }, [postcardStorage.searchFilter, postcardStorage.distanceFilter, postcardStorage.timeFilter, postcardStorage.selectedCountry]);
+  }, [postcardStorage.searchFilter, postcardStorage.distanceFilter, postcardStorage.timeFilter, postcardStorage.selectedOriginCountry, postcardStorage.selectedReceivingCountry, postcardStorage.showOutliers]);
 
   useEffect(() => {
     if (!data || !svgRef.current) return;
